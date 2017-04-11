@@ -1,0 +1,11 @@
+package remotedesktop.server;
+
+import java.io.IOException;
+
+public interface ClientDataSenderListener {
+	public void onPrepare(ClientDataSender clientDataSender);
+	public void onStart(ClientDataSender clientDataSender);
+	public void onSuccess(ClientDataSender clientDataSender);
+	public void onError(ClientDataSender clientDataSender, IOException e);
+	public void onComplete(ClientDataSender clientDataSender);
+}

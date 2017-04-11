@@ -1,0 +1,150 @@
+package remotedesktop.server.client;
+
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Scanner;
+
+import remotedesktop.server.Logger;
+import remotedesktop.server.datasender.DataSender;
+import remotedesktop.server.datasender.DataSenderListener;
+
+/**
+ * Éssa classe é responsável por tratar de toda a comunicação com um cliente conectado
+ * 
+ * @author Carlos Rodrigues (carlosrodriguesf96@gmail.com)
+ */
+public class Client extends Thread implements DataSenderListener {
+	private static int idInc = 1;
+
+	private Logger logger;
+	private int id;
+	private Socket socket;
+	private ObjectOutputStream outputStream;
+	private Scanner inputStream;
+	private ClientListener listener;
+	private boolean sendLocked;
+	private int errorCount;
+
+	/**
+	 * No momento da instância da classe, o cliente recebe um id único
+	 * 
+	 * @param socket
+	 * @param listener
+	 * @throws IOException
+	 */
+	public Client(Socket socket, ClientListener listener) throws IOException {
+		this.logger = Logger.getInstance();
+		this.id = idInc++;
+		this.socket = socket;
+		this.outputStream = new ObjectOutputStream(socket.getOutputStream());
+		this.inputStream = new Scanner(socket.getInputStream());
+		this.sendLocked = false;
+		this.listener = listener;
+		
+		
+	}
+	
+	public String getClientDetailsAsString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("\tClient Id: %s\n");
+		builder.append("\tRemote Address: %s\n");
+		builder.append("\tRemote Name: %s\n");
+		builder.append("\tRemote Port: %s\n");
+		builder.append("\tLocal Port: %d");
+		
+		InetAddress inet = this.socket.getInetAddress();
+		
+		return String.format(builder.toString(), this.getClientId(), inet.getHostAddress(), inet.getHostName(), this.socket.getPort(), this.socket.getLocalPort());
+	}
+
+	public int getClientId() {
+		return id;
+	}
+
+	private void disconnect() throws IOException {
+		this.sendLocked = true;
+
+		IOException e = null;
+		try {
+			this.inputStream.close();
+			this.outputStream.close();
+			this.socket.close();
+		} catch (IOException e1) {
+			e = e1;
+		}
+		
+		this.listener.onDisconnected(this);
+		
+		if(e != null) {
+			throw e;
+		}
+	}
+
+	public void sendBytes(byte[] bytes) {
+		if (!this.sendLocked) {
+			DataSender sender = new DataSender(bytes, this.outputStream, this);
+			sender.start();
+		}
+	}
+
+	@Override
+	public void run() {
+		while (this.inputStream.hasNextLine()) {
+			String line = this.inputStream.nextLine();
+			if (line.equals("DISCONNECT")) {
+				try {
+					this.disconnect();
+				} catch (IOException e) {
+					this.logger.printStackTrace(e);
+				}
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Data Sender Listener Methods
+	 */
+	@Override
+	public void onPrepare(DataSender clientDataSender) {
+		this.sendLocked = true;
+	}
+
+	@Override
+	public void onStart(DataSender clientDataSender) {
+		if(this.errorCount > 0) {
+			this.logger.info("Tentando novamente...");
+		}
+	}
+
+	@Override
+	public void onSuccess(DataSender clientDataSender) {
+		if(this.errorCount > 0) {
+			this.logger.info("Sucesso ao enviar dados, zerando contador de erros.");
+			this.errorCount = 0;
+		}
+	}
+
+	@Override
+	public void onError(DataSender clientDataSender, IOException e) {
+		++ this.errorCount;
+		
+		this.logger.error(String.format("Client (%d): Erro ao enviar dados. %d/10", this.getClientId(), this.errorCount));
+		
+		if( this.errorCount >= 10) {
+			try {
+				this.disconnect();
+			} catch (IOException e1) {
+				this.logger.printStackTrace(e1);
+				System.exit(1);
+			}
+		}
+	}
+
+	@Override
+	public void onComplete(DataSender clientDataSender) {
+		this.sendLocked = false;
+	}
+}

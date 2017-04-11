@@ -1,0 +1,11 @@
+package remotedesktop.server;
+
+import java.awt.image.BufferedImage;
+
+/**
+ * 
+ * @author Carlos Rodrigues (carlosrodriguesf96@gmail.com)
+ */
+public interface AutoScreenshotListener {
+	public void onScreenshot(BufferedImage image);
+}

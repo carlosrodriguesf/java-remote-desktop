@@ -1,0 +1,22 @@
+1491771315786	Move compilation unit
+1491771342593	Rename package 'carlosrodrigues.remotedesktop.server'
+1491773197555	Rename type 'RemoteDesktopClient'
+1491773202703	Rename type 'RemoteDesktopServer'
+1491773404256	Copy compilation unit
+1491773414619	Delete element
+1491778260689	Delete element
+1491779720979	Rename compilation unit 'OnTakeListener.java'
+1491779770179	Rename type 'ScreenShotter'
+1491779780534	Rename compilation unit 'ScreenShotterListener.java'
+1491779787382	Rename type 'AutoScreenShot'
+1491779792785	Rename compilation unit 'AutoScreenShotListener.java'
+1491784386958	Rename type 'ClientImageSender'
+1491784394208	Rename type 'ClientImageSenderListener'
+1491784701955	Rename type 'ClienteDataSenderListener'
+1491876029049	Move compilation units
+1491876047486	Move compilation units
+1491876075795	Rename package 'remotedesktop.server.client.datasender'
+1491876082644	Move compilation units
+1491876105250	Move compilation units
+1491876111600	Rename type 'ClientDataSender'
+1491876117515	Rename type 'ClientDataSenderListener'

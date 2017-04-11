@@ -1,0 +1,5 @@
+package remotedesktop.server;
+
+public interface ClientListener {
+	public void onDisconnected(Client client);
+}
