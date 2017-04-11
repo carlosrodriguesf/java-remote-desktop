@@ -1,5 +1,0 @@
-package remotedesktop.server;
-
-public interface ClientListener {
-
-}
