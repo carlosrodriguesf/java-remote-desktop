@@ -24,6 +24,7 @@ import remotedesktop.server.Server;
  */
 
 public class Main {
+	private static final boolean ENABLE_LOGGING = false;
 	
 	public static void main(String[] args) {
 		config();
@@ -41,7 +42,10 @@ public class Main {
 	
 	private static void config() {
 		Logger logger = Logger.getInstance();
-		logger.addOutputStream(System.out);
+		if(!ENABLE_LOGGING) {
+			logger.disable();
+		}
+		//logger.addOutputStream(System.out);
 		try {
 			logger.addOutputStream(new FileOutputStream(new File("log.txt"), true));
 		} catch (FileNotFoundException ignore) {

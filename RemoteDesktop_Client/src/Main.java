@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -10,9 +11,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 /**
@@ -26,6 +25,7 @@ public class Main {
 	private static ObjectInputStream inputStream;
 	private static PrintStream outputStream;
 	private static Thread listener;
+	private static Dimension windowSize;
 
 	private static void showException(Exception e) {
 		JOptionPane.showMessageDialog(null, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE, null);
@@ -36,14 +36,18 @@ public class Main {
 	 * 
 	 * @return JLabel
 	 */
-	private static JLabel createFrame() {
-		JLabel imgLabel = new JLabel();
+	private static JImagePanel createFrame() {
+		int width = 700, height = width;
+		
+		JImagePanel imagePanel = new JImagePanel();
 
 		JFrame frm = new JFrame();
 		frm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frm.setBounds(100, 100, 700, 700);
-		frm.setContentPane(imgLabel);
+		frm.setBounds(100, 100, 700, 530);
+		frm.setContentPane(imagePanel);
 		frm.setVisible(true);
+		
+		Main.windowSize = frm.getSize();
 		
 		/**
 		 * quando a janela for fechada o código abaixo será executado e avisará ao servidor que 
@@ -58,8 +62,14 @@ public class Main {
 				}
 			}
 		});
+		frm.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				Main.windowSize = e.getComponent().getSize();
+			}
+		});
 
-		return imgLabel;
+		return imagePanel;
 	}
 
 	/**
@@ -68,7 +78,7 @@ public class Main {
 	 * 
 	 * @param label
 	 */
-	private static void startListener(final JLabel label) {
+	private static void startListener(final JImagePanel imgPanel) {
 		Main.listener = new Thread() {
 			public void run() {
 				Object data;
@@ -78,7 +88,7 @@ public class Main {
 							continue;
 						}
 
-						label.setIcon(new ImageIcon(ImageIO.read(new ByteArrayInputStream((byte[]) data))));
+						imgPanel.setImage(ImageIO.read(new ByteArrayInputStream((byte[]) data)));
 					} catch (ClassNotFoundException | IOException e) {
 						Main.showException(e);
 						try {
@@ -113,7 +123,7 @@ public class Main {
 	 * @throws IOException
 	 */
 	private static void disconnect() throws IOException {
-		Main.listener.stop();
+		Main.listener.interrupt();
 		Main.outputStream.println("DISCONNECT");
 		Main.outputStream.close();
 		Main.inputStream.close();
