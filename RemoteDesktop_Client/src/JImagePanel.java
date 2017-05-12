@@ -36,13 +36,8 @@ public class JImagePanel extends JPanel implements ComponentListener {
 			height = width * imageProportion;
 		}
 
-		x = this.getWidth() - width;
-		if (x > 0)
-			x /= 2;
-
-		y = this.getHeight() - height;
-		if (y > 0)
-			y /= 2;
+		x = (this.getWidth() - width) / 2;
+		y = (this.getHeight() - height) / 2;
 
 		this.resizedImage = this.image.getScaledInstance((int) width, (int) height, Image.SCALE_AREA_AVERAGING);
 		this.imageBounds = new Rectangle((int) x, (int) y, (int) width, (int) height);
